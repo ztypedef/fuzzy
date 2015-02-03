@@ -40,17 +40,18 @@ float trimf::get_mmbrsp(float v)
 
 FIC::~FIC()
 {
-	std::map<int, std::vector<Var*>*>::iterator it = mfmap.begin();
+	std::map<int, std::map<int, Var*>*>::iterator it = mfmap.begin();
 	for (it=mfmap.begin(); it!=mfmap.end(); ++it) 
 	{
-		std::vector<Var*>* pvect = it->second;
+		std::map<int, Var*>* pmap = it->second;
 		Var *pvard;
-		while (!pvect->empty())
+		while (!pmap->empty())
 		{
-			pvard = pvect->back();
+			
+			pvard = pmap->begin()->second;
 			printf("[FIC] delete Var: %p\n", pvard);
 			delete pvard;
-			pvect->pop_back();
+			pmap->erase(pmap->begin());
 		}
 		printf("[FIC] delete vector pointer: %p\n", it->second);
 		delete it->second;
@@ -60,31 +61,35 @@ FIC::~FIC()
 
 int FIC::addvar(std::string mfname)
 {
-	std::vector<Var*> *pv = new std::vector<Var*>();
+	std::map<int, Var*> *pv = new std::map<int, Var*>();
 	printf("[FIC] new vector pointer: %p\n", pv);
 	
-	std::map<int, std::vector<Var*>*>::iterator it = mfmap.end();
+	std::map<int, std::map<int, Var*>*>::iterator it = mfmap.end();
 	int id = it->first + 1;
 	it = mfmap.begin();
-	mfmap.insert(it, std::pair<int, std::vector<Var*>*>(id, pv));
+	mfmap.insert(it, std::pair<int, std::map<int, Var*>*>(id, pv));
 	return id;	
 }
 
 
-int FIC::addmf(int idmf, Var *v)
+int FIC::addmf(int idvar, Var *v)
 {
-	std::map<int, std::vector<Var*>*>::iterator it = mfmap.find(idmf);
-	std::vector<Var*> *pv = it->second;
-	pv->push_back(v);
-	return 0;
+	std::map<int, std::map<int, Var*>*>::iterator itm = mfmap.find(idvar);
+	std::map<int, Var*> *pv = itm->second;
+		
+	std::map<int, Var*>::iterator it = pv->end();
+	int id = it->first + 1;
+	it = pv->begin();
+	pv->insert(it, std::pair<int, Var*>(id, v));
+	return id;
 }
 
-int FIC::addmf_tri(int idmf, float *x)
+int FIC::addmf_tri(int idvar, float *x)
 {
 	if (x[0] > x[1]) throw "var 1 > var 2";
 	if (x[1] > x[2]) throw "var 2 > var 3";
 	trimf *tri = new trimf(x);
 	printf("[FIC] new Triangular MF: %p\n", tri);
-	addmf(idmf, (Var*)tri);
+	addmf(idvar, (Var*)tri);
 	return 0;
 }

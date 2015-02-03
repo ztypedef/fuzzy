@@ -2,7 +2,6 @@
 #define FUZZY_H
 #include <string>
 #include <map>
-#include <vector>
 
 namespace fuzzy
 {
@@ -37,8 +36,8 @@ namespace fuzzy
 	public:
 		~FIC();
 		int addvar(std::string mfname); //return id mf
-		int addmf(int idmf, Var *v); //return id var
-		int addmf_tri(int idmf, float *x);
+		int addmf(int idvar, Var *v); //return id var
+		int addmf_tri(int idvar, float *x);
 		int addrule();
 		float genval(float p);
 	private:
@@ -48,8 +47,8 @@ namespace fuzzy
 		fnumber fz_and(fnumber v1, fnumber v2);
 		fnumber fz_or(fnumber v1, fnumber v2);
 
-		std::vector<Var*> var;
-		std::map<int, std::vector<Var*>*> mfmap;
+		std::map<int, Var*> var;
+		std::map<int, std::map<int, Var*>*> mfmap;
 	};
 }
 #endif
