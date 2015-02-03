@@ -1,17 +1,26 @@
 #include <stdio.h>
 #include "fuzzy.h"
 
+
+
 int main()
 {
-	printf("test\n");
+	
+	//printf("[] sizeof var: %i\n", sizeof(fuzzy::Var));
+	//printf("[] sizeof trimf: %i\n", sizeof(fuzzy::trimf));	
+	
 	fuzzy::FIC fic;
-	int id = fic.addmf("m1");
-	//printf("[main] id mf: %i\n", id);
-	
+	int id = fic.addvar("m1");
 	float val[] = {1.0, 10.0, 15.0};
-	fuzzy::Var v = fuzzy::Var(fuzzy::TRN, val);
-	fic.addvar(id, &v);
-	
+	try
+	{
+		fic.addmf_tri(id, val);
+	}
+	catch (const char* ch)
+	{
+		printf("[exeption] error: %s\n", ch);
+		return -1;
+	}
 	
 	return 0;
 }

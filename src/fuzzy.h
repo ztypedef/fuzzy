@@ -7,44 +7,49 @@
 namespace fuzzy
 {
 
-	typedef enum mftype
-	{
-		TRN = 0x0,
-	}mftype;
-
-	typedef struct fpoint
+	typedef struct fnumber
 	{
 		float value;
 		float mu;
-	}fpoint;
-	
+	}fnumber;
+		
 	class Var
 	{
 	public:
-		Var(mftype mf_type, float *v);
+		Var(float *v, int len);
 		~Var();
-	private:
+		virtual float get_mmbrsp(float v){return 0;};
+	protected:
 		float *pvar;
-		mftype mft;	
+		int len;
+	};
+	
+	class trimf : public Var
+	{
+	public:
+		trimf(float *v);
+		~trimf();
+		float get_mmbrsp(float v);
 	};
 
 	class FIC
 	{
 	public:
 		~FIC();
-		int addmf(std::string mfname); //return id mf
-		int addvar(int idmf, Var *v); //return id var
+		int addvar(std::string mfname); //return id mf
+		int addmf(int idmf, Var *v); //return id var
+		int addmf_tri(int idmf, float *x);
 		int addrule();
 		float genval(float p);
 	private:
-		fpoint fuzzification(float value);
-		float defuzzification(fpoint value);
+		fnumber fuzzification(float value);
+		float defuzzification(fnumber value);
 		
-		fpoint fz_and(fpoint v1, fpoint v2);
-		fpoint fz_or(fpoint v1, fpoint v2);
+		fnumber fz_and(fnumber v1, fnumber v2);
+		fnumber fz_or(fnumber v1, fnumber v2);
 
-		std::vector<Var> var;
-		std::map<int, std::vector<Var>*> mfmap;
+		std::vector<Var*> var;
+		std::map<int, std::vector<Var*>*> mfmap;
 	};
 }
 #endif
