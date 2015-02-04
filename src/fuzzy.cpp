@@ -5,25 +5,25 @@
 
 using namespace fuzzy;
 
-Var::Var(float *v, int len)
+MF::MF(float *v, int len)
 {
 	pvar = new float[len];
-	printf("[Var] new pointer: %p\n", pvar);
+	printf("[MF] new pointer: %p\n", pvar);
 	memcpy(pvar, v, sizeof(float) * len);
 }
 
-Var::~Var()
+MF::~MF()
 {
 	if(pvar != NULL)
 	{
-		printf("[Var] delete pointer: %p\n", pvar);
+		printf("[MF] delete pointer: %p\n", pvar);
 		delete [] pvar;
 		pvar = NULL;
 	}
 }
 
 
-trimf::trimf(float *v) : Var(v, 3) {}
+trimf::trimf(float *v) : MF(v, 3) {}
 
 trimf::~trimf() {}
 
@@ -40,60 +40,82 @@ float trimf::get_mmbrsp(float v)
 
 FIC::FIC()
 {
-	
+	fic_rule = NULL;
 }
 
 FIC::~FIC()
 {
-	while(!rule.empty())
+	if(fic_rule != NULL)
 	{
-		int *r = rule.back();
-		printf("[FIC] delete rule: %p\n", r);
-		delete[] r;
-		rule.pop_back();
+		for(int i = 0; i < rule_collumn; i++)
+		{
+			printf("[FIC] delete row rule: %p\n", fic_rule[i]);
+			delete [] fic_rule[i];
+		}
+		printf("[FIC] delete collumn rule: %p\n", fic_rule);
+		delete [] fic_rule;
+		fic_rule = NULL;
 	}
 	
-	std::map<int, std::map<int, Var*>*>::iterator it = mfmap.begin();
-	for (it=mfmap.begin(); it!=mfmap.end(); ++it) 
+	std::map<int, std::map<int, MF*>*>::iterator it = input_var.begin();
+	for (it=input_var.begin(); it!=input_var.end(); ++it) 
 	{
-		std::map<int, Var*>* pmap = it->second;
-		Var *pvard;
+		std::map<int, MF*>* pmap = it->second;
+		MF *pvard;
 		while (!pmap->empty())
 		{
 			
 			pvard = pmap->begin()->second;
-			printf("[FIC] delete Var: %p\n", pvard);
+			printf("[FIC] delete MF: %p\n", pvard);
 			delete pvard;
 			pmap->erase(pmap->begin());
 		}
 		printf("[FIC] delete vector pointer: %p\n", it->second);
 		delete it->second;
-		mfmap.erase(it);
+		input_var.erase(it);
 	}
 }
 
-int FIC::addvar(std::string mfname)
+int FIC::addvar(std::string mfname, var_t type)
 {
-	std::map<int, Var*> *pv = new std::map<int, Var*>();
+	std::map<int, MF*> *pv = new std::map<int, MF*>();
 	printf("[FIC] new vector pointer: %p\n", pv);
-	
-	std::map<int, std::map<int, Var*>*>::iterator it = mfmap.end();
-	int id = it->first + 1;
-	it = mfmap.begin();
-	mfmap.insert(it, std::pair<int, std::map<int, Var*>*>(id, pv));
-	return id;	
+		
+	switch(type)
+	{
+		case INPUT:
+		{
+			std::map<int, std::map<int, MF*>*>::iterator it = input_var.end();
+			int id = it->first + 1;
+			it = input_var.begin();
+			input_var.insert(it, std::pair<int, std::map<int, MF*>*>(id, pv));
+			return id;
+		}
+		case OUTPUT:
+		{
+			std::map<int, std::map<int, MF*>*>::iterator it = output_var.end();
+			int id = it->first + 1;
+			it = output_var.begin();
+			output_var.insert(it, std::pair<int, std::map<int, MF*>*>(id, pv));
+			return id;
+		}
+		default:
+			printf("[FIC] delete vector pointer: %p\n", pv);
+			delete pv;
+			break;
+	}
+	return -1;
 }
 
-
-int FIC::addmf(int idvar, Var *v)
+int FIC::addmf(int idvar, MF *v)
 {
-	std::map<int, std::map<int, Var*>*>::iterator itm = mfmap.find(idvar);
-	std::map<int, Var*> *pv = itm->second;
+	std::map<int, std::map<int, MF*>*>::iterator itm = input_var.find(idvar);
+	std::map<int, MF*> *pv = itm->second;
 		
-	std::map<int, Var*>::iterator it = pv->end();
+	std::map<int, MF*>::iterator it = pv->end();
 	int id = it->first + 1;
 	it = pv->begin();
-	pv->insert(it, std::pair<int, Var*>(id, v));
+	pv->insert(it, std::pair<int, MF*>(id, v));
 	return id;
 }
 
@@ -103,20 +125,30 @@ int FIC::addmf_tri(int idvar, float *x)
 	if (x[1] > x[2]) throw "var 2 > var 3";
 	trimf *tri = new trimf(x);
 	printf("[FIC] new Triangular MF: %p\n", tri);
-	addmf(idvar, (Var*)tri);
+	addmf(idvar, (MF*)tri);
 	return 0;
 }
 
-void FIC::addrule(int id_in_mf, int id_out_mf)
+void FIC::addrule(int rule[], int collumn, int row)
 {
-	int* r = new int[2];
-	printf("[FIC] new rule: %p\n", r);
-	r[0] = id_in_mf;
-	r[1] = id_out_mf;
-	rule.push_back(r);
+	if(fic_rule != NULL) return;
+	if((input_var.size() + output_var.size() + 2) != (unsigned)row) throw "size of the matrix must be equal: ";
+								
+	rule_collumn = collumn;
+	rule_row = row;
+	fic_rule = new int*[collumn];
+	printf("[FIC] new collumn rule: %p\n", fic_rule);
+	
+	for(int i = 0; i < collumn; i++)
+	{
+		fic_rule[i] = new int[row];
+		printf("[FIC] new row rule: %p\n", fic_rule[i]);
+		memcpy(fic_rule[i], &rule[i * row], sizeof(int) * row);
+	}
 }
 
 float FIC::fuzzification(float value)
 {
+	
 	return 0.0;
 }
