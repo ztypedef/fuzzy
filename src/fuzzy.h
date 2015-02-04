@@ -2,15 +2,10 @@
 #define FUZZY_H
 #include <string>
 #include <map>
+#include <vector>
 
 namespace fuzzy
 {
-
-	typedef struct fnumber
-	{
-		float value;
-		float mu;
-	}fnumber;
 		
 	class Var
 	{
@@ -34,19 +29,21 @@ namespace fuzzy
 	class FIC
 	{
 	public:
+		FIC();
 		~FIC();
 		int addvar(std::string mfname); //return id mf
 		int addmf(int idvar, Var *v); //return id var
 		int addmf_tri(int idvar, float *x);
-		int addrule();
+		void addrule(int id_in_mf, int id_out_mf);
 		float genval(float p);
-	private:
-		fnumber fuzzification(float value);
-		float defuzzification(fnumber value);
+	//private:
+		float fuzzification(float value);
+		float defuzzification(float value);
 		
-		fnumber fz_and(fnumber v1, fnumber v2);
-		fnumber fz_or(fnumber v1, fnumber v2);
-
+		float fz_and(float v1, float v2);
+		float fz_or(float v1, float v2);
+	private:
+		std::vector<int*> rule;
 		std::map<int, Var*> var;
 		std::map<int, std::map<int, Var*>*> mfmap;
 	};

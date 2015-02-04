@@ -38,8 +38,21 @@ float trimf::get_mmbrsp(float v)
 	return 0.0;
 }
 
+FIC::FIC()
+{
+	
+}
+
 FIC::~FIC()
 {
+	while(!rule.empty())
+	{
+		int *r = rule.back();
+		printf("[FIC] delete rule: %p\n", r);
+		delete[] r;
+		rule.pop_back();
+	}
+	
 	std::map<int, std::map<int, Var*>*>::iterator it = mfmap.begin();
 	for (it=mfmap.begin(); it!=mfmap.end(); ++it) 
 	{
@@ -92,4 +105,18 @@ int FIC::addmf_tri(int idvar, float *x)
 	printf("[FIC] new Triangular MF: %p\n", tri);
 	addmf(idvar, (Var*)tri);
 	return 0;
+}
+
+void FIC::addrule(int id_in_mf, int id_out_mf)
+{
+	int* r = new int[2];
+	printf("[FIC] new rule: %p\n", r);
+	r[0] = id_in_mf;
+	r[1] = id_out_mf;
+	rule.push_back(r);
+}
+
+float FIC::fuzzification(float value)
+{
+	return 0.0;
 }
