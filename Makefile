@@ -12,6 +12,7 @@ CFLAGS += -I$(STM_COMMON)
 
 SRCS = src/main.cpp
 SRCS += src/fuzzy.cpp
+SRCS += src/memcheck.cpp
  
 SRCSND = $(notdir $(SRCS))
 OBJS := $(SRCSND:.cpp=.o)

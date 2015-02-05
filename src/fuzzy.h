@@ -17,7 +17,7 @@ namespace fuzzy
 	public:
 		MF(float *v, int len);
 		~MF();
-		virtual float get_mmbrsp(float v){return 0;};
+		virtual float get_fuzzynum(float v){return 0;};
 	protected:
 		float *pvar;
 		int len;
@@ -28,7 +28,7 @@ namespace fuzzy
 	public:
 		trimf(float *v);
 		~trimf();
-		float get_mmbrsp(float v);
+		float get_fuzzynum(float v);
 	};
 
 	class FIC
@@ -38,11 +38,13 @@ namespace fuzzy
 		~FIC();
 		//int addvar(std::string mfname); //return id mf
 		int addvar(std::string mfname, var_t type);
-		int addmf(int idvar, MF *v); //return id var
-		int addmf_tri(int idvar, float *x);
+		int addmf(int idvar, MF *v, var_t type); //return id var
+		int addmf_tri(int idvar, float *x, var_t type);
 		void addrule(int rule[], int collumn, int row);
 		float genval(float p);
 	//private:
+		MF* get_input_MF(int idvar, int idmf);
+		MF* get_output_MF(int idvar, int idmf);
 		float fuzzification(float value);
 		float defuzzification(float value);
 		
