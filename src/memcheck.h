@@ -1,9 +1,13 @@
 #ifndef MEMCHACK_H
 #define MEMCHACK_H
 
-#define MEMCHECK Memcheck::getInstance()
 #include <map>
 #include <string>
+
+//#define PRINT_DEFAULT
+#define MEMCHECK Memcheck::getInstance()
+
+
 
 class Memcheck
 {

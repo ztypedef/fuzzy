@@ -10,7 +10,6 @@ MF::MF(float *v, int len)
 {
 	pvar = new float[len];
 	MEMCHECK.add_ptr(pvar, "[MF] pvar");
-	printf("[MF] new pointer: %p\n", pvar);
 	memcpy(pvar, v, sizeof(float) * len);
 }
 
@@ -18,7 +17,6 @@ MF::~MF()
 {
 	if(pvar != NULL)
 	{
-		printf("[MF] delete pointer: %p\n", pvar);
 		MEMCHECK.rm_ptr(pvar);
 		delete [] pvar;
 		pvar = NULL;
@@ -52,10 +50,10 @@ FIC::~FIC()
 	{
 		for(int i = 0; i < rule_collumn; i++)
 		{
-			printf("[FIC] delete row rule: %p\n", fic_rule[i]);
+			MEMCHECK.rm_ptr(fic_rule[i]);
 			delete [] fic_rule[i];
 		}
-		printf("[FIC] delete collumn rule: %p\n", fic_rule);
+		MEMCHECK.rm_ptr(fic_rule);
 		delete [] fic_rule;
 		fic_rule = NULL;
 	}
@@ -68,21 +66,38 @@ FIC::~FIC()
 		{
 			
 			pvard = pmap->begin()->second;
-			printf("[FIC] delete MF: %p\n", pvard);
+			MEMCHECK.rm_ptr(pvard);
 			delete pvard;
 			pmap->erase(pmap->begin());
 		}
-		printf("[FIC] delete vector pointer: %p\n", it->second);
+		
 		MEMCHECK.rm_ptr(it->second);
 		delete it->second;
 		input_var.erase(it);
+	}
+	
+	for(auto it = output_var.begin(); it != output_var.end(); it++) 
+	{
+		std::map<int, MF*>* pmap = it->second;
+		MF *pvard;
+		while (!pmap->empty())
+		{
+			
+			pvard = pmap->begin()->second;
+			MEMCHECK.rm_ptr(pvard);
+			delete pvard;
+			pmap->erase(pmap->begin());
+		}
+		
+		MEMCHECK.rm_ptr(it->second);
+		delete it->second;
+		output_var.erase(it);
 	}
 }
 
 int FIC::addvar(std::string mfname, var_t type)
 {
 	std::map<int, MF*> *pv = new std::map<int, MF*>();
-	printf("[FIC] new vector pointer: %p\n", pv);
 	MEMCHECK.add_ptr(pv, "[FIC::addvar] pv");
 	
 	switch(type)
@@ -130,7 +145,6 @@ int FIC::addmf(int idvar, MF *v, var_t type)
 		
 	std::map<int, MF*>::iterator it = pv->end();
 	int id = it->first + 1;
-	printf("[addmf] calc id: %i\n", id);
 	it = pv->begin();
 	pv->insert(it, std::pair<int, MF*>(id, v));
 	return id;
@@ -141,7 +155,7 @@ int FIC::addmf_tri(int idvar, float *x, var_t type)
 	if (x[0] > x[1]) throw "var 1 > var 2";
 	if (x[1] > x[2]) throw "var 2 > var 3";
 	trimf *tri = new trimf(x);
-	printf("[FIC] new Triangular MF: %p\n", tri);
+	MEMCHECK.add_ptr(tri, "[FIC::addmf_tri] tri");
 	return addmf(idvar, (MF*)tri, type);
 }
 
@@ -153,12 +167,12 @@ void FIC::addrule(int rule[], int collumn, int row)
 	rule_collumn = collumn;
 	rule_row = row;
 	fic_rule = new int*[collumn];
-	printf("[FIC] new collumn rule: %p\n", fic_rule);
+	MEMCHECK.add_ptr(fic_rule, "[FIC::addrule] fic_rule");
 	
 	for(int i = 0; i < collumn; i++)
 	{
 		fic_rule[i] = new int[row];
-		printf("[FIC] new row rule: %p\n", fic_rule[i]);
+		MEMCHECK.add_ptr(fic_rule[i], "[FIC::addrule] fic_rule[i]");
 		memcpy(fic_rule[i], &rule[i * row], sizeof(int) * row);
 	}
 }
@@ -166,7 +180,6 @@ void FIC::addrule(int rule[], int collumn, int row)
 MF* FIC::get_input_MF(int idvar, int idmf)
 {
 	std::map<int, MF*>* mapmf = input_var.find(idvar)->second;
-	printf("[fuzzification] pointer mapmf: %p\n", mapmf);
 	return mapmf->find(idmf)->second;
 }
 
@@ -184,11 +197,9 @@ float FIC::fuzzification(float value)
 	for(unsigned n = 0; n < input_var.size(); n++)
 	{
 		idmf = fic_rule[idvar][n];
-		printf("[fuzzification] id var: %i\n", idvar);
 		MF* mf = get_input_MF(idvar, idmf);
-		printf("[fuzzification] pointer mf: %p\n", mf);
 		printf("[fuzzification] get mf value: %f\n", mf->get_fuzzynum(value));
-		printf("[fuzzification] test \n");
+
 	}
 	
 	return 0.0;

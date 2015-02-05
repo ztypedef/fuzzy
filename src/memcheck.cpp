@@ -26,11 +26,13 @@ void Memcheck::rm_ptr(void* ptr)
 
 void Memcheck::print_ptr()
 {
+	#ifdef PRINT_DEFAULT
 	if(mptr.size() == 0)
 	{
 			printf("[MEMCHECK] no pointer\n");
 			return;
 	}
+	#endif
 	
 	std::map<unsigned, std::string>::iterator it = mptr.begin();
 	for(it = mptr.begin(); it != mptr.end(); ++it)
