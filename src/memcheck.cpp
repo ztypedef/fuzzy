@@ -29,18 +29,13 @@ void Memcheck::print_ptr()
 	#ifdef PRINT_DEFAULT
 	if(mptr.size() == 0)
 	{
-			printf("[MEMCHECK] no pointer\n");
-			return;
+		printf("[MEMCHECK] no pointer\n");
+		return;
 	}
 	#endif
 	
 	std::map<unsigned, std::string>::iterator it = mptr.begin();
 	for(it = mptr.begin(); it != mptr.end(); ++it)
 		printf("[MEMCHECK] pointer: 0x%x is %s\n", it->first, (it->second).c_str());
-				
-    /*
-	for(unsigned i = 0; i < mptr.size(); i++)
-	{
-		printf("[MEMCHECK] pointer: 0x%x\n",vptr[i]);
-	}*/
+
 }

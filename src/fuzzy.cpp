@@ -25,7 +25,6 @@ MF::~MF()
 
 
 trimf::trimf(float *v) : MF(v, 3) {}
-
 trimf::~trimf() {}
 
 float trimf::get_fuzzynum(float v)
@@ -37,6 +36,49 @@ float trimf::get_fuzzynum(float v)
 	if(v == pvar[1])
 		return 1.0f;
 	return 0.0;
+}
+
+void trimf::getx(float *x, float mu)
+{
+	x[0] = -(mu - 1) * (pvar[2] - pvar[1]) + pvar[1];
+	x[1] = -(mu - 1) * (pvar[1] - pvar[0]) - pvar[1];
+}
+
+
+ #define FUZZY_TRI_WARNING(a) printf("[WARNING] limit of integration must lie in the triangle: %i\n", a)
+float trimf::integral(float l, float r, float h)
+{
+	int method_intg = 0;
+	if(l > r) throw "left margin must be greater than the right";
+	if(l < pvar[0]) {l = pvar[0]; FUZZY_TRI_WARNING(0);};
+	if(l > pvar[2]) {l = pvar[2]; FUZZY_TRI_WARNING(1);};
+	if(r < pvar[0]) {r = pvar[0]; FUZZY_TRI_WARNING(2);};
+	if(r > pvar[2]) {r = pvar[2]; FUZZY_TRI_WARNING(3);};
+	
+	if(l > pvar[1]) method_intg = 1;
+	if(r < pvar[1]) method_intg = 2;
+	float cr = 0, lc = 0, x[2];
+	getx(x, h);
+	
+	switch(method_intg)
+	{
+		case 0:
+			cr = (r - pvar[1]) * pvar[2] / (pvar[2] - pvar[1]) 
+						- (r * r - pvar[1] * pvar[1]) / ( 2.0f * (pvar[2] - pvar[1]));
+			lc = (pvar[1] * pvar[1] - l * l - (pvar[1] - l) * pvar[0] * 2.0f) / 2.0f / (pvar[1] - pvar[0]);
+			break;
+		case 1:
+			cr = (r - l) * pvar[2] / (pvar[2] - pvar[1]) 
+						- (r * r  - l * l) / ( 2.0f * (pvar[2] - pvar[1]));
+			lc = (pvar[1] - pvar[0]) / 2);
+			break;
+		case 2:
+			cr = (pvar[2] - pvar[1]) / 2;
+			lc = (r * r - l * l - (r - l) * pvar[0] * 2.0f) / 2.0f / (pvar[1] - pvar[0]);
+			break;
+	}
+	//printf("cr: %f; lc: %f\n", cr, lc);
+	return cr + lc;
 }
 
 FIC::FIC()
@@ -193,13 +235,15 @@ MF* FIC::get_output_MF(int idvar, int idmf)
 float FIC::fuzzification(float value)
 {
 	int idvar = 1, idmf;
+	int k = 0;
 	
 	for(unsigned n = 0; n < input_var.size(); n++)
 	{
-		idmf = fic_rule[idvar][n];
+		idmf = fic_rule[k][n];
+		if(idmf == 0) continue;
 		MF* mf = get_input_MF(idvar, idmf);
 		printf("[fuzzification] get mf value: %f\n", mf->get_fuzzynum(value));
-
+		printf("[fuzzification] get mf integral: %f\n", mf->integral(1, 3.0, 0.5));
 	}
 	
 	return 0.0;

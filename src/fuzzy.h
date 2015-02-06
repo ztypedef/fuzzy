@@ -18,6 +18,8 @@ namespace fuzzy
 		MF(float *v, int len);
 		~MF();
 		virtual float get_fuzzynum(float v){return 0;};
+		virtual float integral(float l, float r, float h){return 0;};
+		virtual void getx(float *x, float mu){};
 	protected:
 		float *pvar;
 		int len;
@@ -29,6 +31,8 @@ namespace fuzzy
 		trimf(float *v);
 		~trimf();
 		float get_fuzzynum(float v);
+		float integral(float l, float r, float h);
+		void getx(float *x, float mu);
 	};
 
 	class FIC
