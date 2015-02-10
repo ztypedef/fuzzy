@@ -2,17 +2,20 @@
 #include "fuzzy.h"
 #include "memcheck.h"
 
+//git clone git://gitorious.org/gnuplot-iostream/gnuplot-iostream.git
 
 int main()
 {
+	//printf("[] sizeof var: %i\n", sizeof(fuzzy::MF));
+	//printf("[] sizeof trimf: %i\n", sizeof(fuzzy::trimf));
 
 	fuzzy::FIC *fic = new fuzzy::FIC();
 	int id_in = fic->addvar("min", fuzzy::INPUT);
 	int id_out = fic->addvar("mout", fuzzy::OUTPUT);
 
 	
-	float val_in1[] =  {1.0, 2.0, 3.0};
-	float val_in2[] =  {6.0, 14.0, 20.0};
+	float val_in1[] =  {1.0, 2.0, 7.0};
+	float val_in2[] =  {6.0, 14.3, 20.0};
 	float val_in3[] =  {16.0, 25.0, 30.0};
 	float val_out1[] = {1.0, 5.0, 7.0};
 	float val_out2[] = {3.0, 10.0, 14.0};
@@ -29,7 +32,7 @@ int main()
 					   {id_i3, id_o2,  1, 0}};
 		
 		fic->addrule(r[0], 3, 4);
-		fic->fuzzification(10.1);
+		fic->fuzzification(19.1);
 		
 	}
 	catch (const char* ch)

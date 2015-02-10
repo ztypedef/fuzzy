@@ -3,7 +3,7 @@ STM_COMMON=src
 
 CC=g++
 
-CFLAGS  = -g -O1 -Wall -std=c++11
+CFLAGS  = -g -O1 -Wall -std=c++11 
 CFLAGS += -I.
 
 OUTPUT_DIR:=build
@@ -13,6 +13,7 @@ CFLAGS += -I$(STM_COMMON)
 SRCS = src/main.cpp
 SRCS += src/fuzzy.cpp
 SRCS += src/memcheck.cpp
+SRCS += src/fuzzyplot.cpp
  
 SRCSND = $(notdir $(SRCS))
 OBJS := $(SRCSND:.cpp=.o)
