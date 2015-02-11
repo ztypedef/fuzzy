@@ -57,7 +57,7 @@ int main(int argc, char *argv[])
 					   {id_i13, id_i22, id_o3,  1, 0}};
 		
 		fic->addrule(r[0], 3, 5);
-		fic->fuzzification(value_input);
+		fic->gensurf();
 		
 	}
 	catch (const char* ch)

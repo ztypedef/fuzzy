@@ -54,6 +54,8 @@ namespace fuzzy
 		int addmf(int idvar, MF *v, var_t type); //return id var
 		int addmf_tri(int idvar, float *x, var_t type);
 		void addrule(int rule[], int collumn, int row);
+		void gensurf();
+		
 		float genval(float p);
 		float intersecting_mf(MF* a, MF* b);
 	//private:

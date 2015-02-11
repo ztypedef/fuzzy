@@ -355,7 +355,7 @@ float FIC::fuzzification(float* value)
 			MF *mf = ((it_iv->second)->find(id_in))->second;
 			float fn = mf->get_fuzzynum(value[num_var]);
 			vm.push_back(fn);
-			printf("[FIC::fuzzification] var: %i, id: %i, mu: %f\n", num_var + 1, id_in, fn);
+			//printf("[FIC::fuzzification] var: %i, id: %i, mu: %f\n", num_var + 1, id_in, fn);
 		}
 		
 		float divide;
@@ -363,8 +363,8 @@ float FIC::fuzzification(float* value)
 			divide = *std::min_element(vm.begin(), vm.end());
 		else
 			divide = *std::max_element(vm.begin(), vm.end());
-		printf("[FIC::fuzzification] rule: %i, insert: %i, %f\n", 
-			fic_rule[i][rule_row - 1], fic_rule[i][input_var.size()], divide);
+		//printf("[FIC::fuzzification] rule: %i, insert: %i, %f\n", 
+		//	fic_rule[i][rule_row - 1], fic_rule[i][input_var.size()], divide);
 			
 		map_table_value_mf.insert(std::pair<int, float>
 			(fic_rule[i][input_var.size()], divide));
@@ -382,7 +382,6 @@ float FIC::truncation(int id_out_var, std::map<int, float> map_table_value_mf)
 		MF *mf = ((it_outv->second)->find(id_out))->second;
 		mf->set_truncation_h(it->second);
 	}	
-	composition();
 	return 0;
 }
 
@@ -417,12 +416,13 @@ float FIC::composition()
 			}
 		}
 	}
-	
+	/*
 	Fuzzyplot fp;
 	fp.set_multiplot();
 	fp.set_xrange(xmin, xmax);
 	fp.plot(xmf, mf_allmax, len_a);
-	fp.plotv(defuzzification());
+	fp.plotv(defuzzification());*/
+	
 	MEMCHECK.rm_ptr(xmf);
 	
 	delete[] xmf;
@@ -441,4 +441,40 @@ float FIC::defuzzification()
 	}
 	//printf("[FIC::defuzzification] %f\n", sumxy / sumy);
 	return sumxy / sumy;
+}
+
+
+void FIC::gensurf()
+{
+	float _h = 2;
+	int len_a = (int) 30 / _h;
+	float value_inp[2];
+	float value_x[len_a * len_a];
+	float value_y[len_a * len_a];
+	float value_z[len_a * len_a];
+	printf("length: %i\n", len_a);
+	for(int i = 0; i < len_a; i++)
+	{
+		for(int j = 0; j < len_a; j++)
+		{
+			value_inp[0] = j * _h;
+			value_inp[1] = i * _h;
+			value_x[i * len_a + j] = value_inp[0];
+			value_y[i * len_a + j] = value_inp[1];
+			fuzzification(value_inp);
+			composition();
+			value_z[i * len_a + j] = defuzzification();
+			value_z[0] = 0;
+			printf("%f %f %f\n", value_x[i * len_a + j], value_y[i * len_a + j], value_z[i * len_a + j]);
+		}
+		printf("=");
+		//fflush(stdout);
+	}
+	printf("\n");
+	printf("end\n");
+	Fuzzyplot fp;
+	fp.set_xrange(0, 30);
+	fp.set_yrange(0, 30);
+	fp.set_zrange(0, 30);
+	fp.plot3d(value_x, value_y, value_z, len_a * len_a);
 }
