@@ -16,7 +16,7 @@ namespace fuzzy
 	{
 	public:
 		MF(float *v, int len);
-		~MF();
+		virtual ~MF();
 		virtual float get_fuzzynum(float v){return 0;};
 		virtual float integral(float l, float r, float h){return 0;};
 		virtual float integral(float h){return 0;};
@@ -59,17 +59,18 @@ namespace fuzzy
 	//private:
 		MF* get_input_MF(int idvar, int idmf);
 		MF* get_output_MF(int idvar, int idmf);
-		float fuzzification(float value);
-		float defuzzification(float value);
+		float fuzzification(float* value);
+		float truncation(int id_out_var, std::map<int, float> map_table_value_mf);
+		float composition();
+		float defuzzification();
 		
-		float fz_and(float v1, float v2);
-		float fz_or(float v1, float v2);
-	
 	private:
 		int get_id_output_mf(int input_var, int id_input_mf);
 		std::pair<int, float> get_id_maxv(std::map<int, float> map_table_value_mf);
 		int **fic_rule;
 		int rule_collumn, rule_row;
+		float * mf_allmax;
+		float xmin = 0, xmax = 30, step = 0.01;
 		std::map<int, MF*> var;
 		std::map<int, std::map<int, MF*>*> input_var;
 		std::map<int, std::map<int, MF*>*> output_var;

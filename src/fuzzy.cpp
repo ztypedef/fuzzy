@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <cmath>
+#include <algorithm> 
 #include "fuzzy.h"
 #include "memcheck.h"
 #include "fuzzyplot.h"
@@ -126,6 +127,7 @@ float trimf::integral(float h)
 FIC::FIC()
 {
 	fic_rule = NULL;
+	mf_allmax = NULL;
 }
 
 FIC::~FIC()
@@ -177,6 +179,9 @@ FIC::~FIC()
 		delete it->second;
 		output_var.erase(it);
 	}
+	
+	MEMCHECK.rm_ptr(mf_allmax);
+	delete[] mf_allmax;
 }
 
 int FIC::addvar(std::string mfname, var_t type)
@@ -335,65 +340,105 @@ std::pair<int, float> FIC::get_id_maxv(std::map<int, float> map_table_value_mf)
 	return std::make_pair(id_max_el, max_value);
 }
 
-float FIC::fuzzification(float value)
+float FIC::fuzzification(float* value)
 {
+	std::vector<float> vm;
 	std::map<int, float> map_table_value_mf;
+	for(int i = 0; i < rule_collumn; i++)
+	{
+		vm.clear();
+		for(unsigned num_var = 0; num_var < input_var.size(); num_var++)
+		{
+			int id_in = fic_rule[i][num_var];
+			//printf("[FIC::fuzzification] get id in: %i\n", id_in);
+			auto it_iv = input_var.find(num_var + 1);
+			MF *mf = ((it_iv->second)->find(id_in))->second;
+			float fn = mf->get_fuzzynum(value[num_var]);
+			vm.push_back(fn);
+			printf("[FIC::fuzzification] var: %i, id: %i, mu: %f\n", num_var + 1, id_in, fn);
+		}
+		
+		float divide;
+		if(fic_rule[i][rule_row - 1])
+			divide = *std::min_element(vm.begin(), vm.end());
+		else
+			divide = *std::max_element(vm.begin(), vm.end());
+		printf("[FIC::fuzzification] rule: %i, insert: %i, %f\n", 
+			fic_rule[i][rule_row - 1], fic_rule[i][input_var.size()], divide);
+			
+		map_table_value_mf.insert(std::pair<int, float>
+			(fic_rule[i][input_var.size()], divide));
+	}
+	truncation(1, map_table_value_mf);
+	return 0.0;
+}
+
+float FIC::truncation(int id_out_var, std::map<int, float> map_table_value_mf)
+{
+	auto it_outv = output_var.find(id_out_var); //TODO hardcode
+	for(auto it = map_table_value_mf.begin(); it != map_table_value_mf.end(); ++it)
+	{
+		int id_out = it->first;
+		MF *mf = ((it_outv->second)->find(id_out))->second;
+		mf->set_truncation_h(it->second);
+	}	
+	composition();
+	return 0;
+}
+
+float FIC::composition()
+{
+	float h = step;
+	float xvarmin = xmin, xvarmax = xmax;
+	int len_a = (int)((xvarmax - xvarmin) / h) + 1;
+	if(mf_allmax != NULL)
+	{
+		MEMCHECK.rm_ptr(mf_allmax);
+		delete[] mf_allmax;
+	}
+	mf_allmax = new float[len_a];
+	MEMCHECK.add_ptr(mf_allmax, "mf_allmax");
+	float *xmf = new float[len_a];
+	MEMCHECK.add_ptr(xmf, "xmf");
+	memset(mf_allmax, 0, sizeof(float) * len_a);
+	
+	auto outv = output_var.find(1)->second; //TODO hardcode
+	
+	for(auto it = outv->begin(); it != outv->end(); ++it)
+	{
+		MF *mf = it->second;
+		for(int i = 0; i < len_a; i++)
+		{
+			xmf[i] = (float)i * h + xvarmin; //TODO kostil
+			float current_mf = mf->get_fuzzynum((float)i * h + xvarmin);
+			if(mf_allmax[i] < current_mf)
+			{
+				mf_allmax[i] = current_mf;
+			}
+		}
+	}
+	
 	Fuzzyplot fp;
 	fp.set_multiplot();
-	fp.set_xrange(0, 30);
-	for(auto it = input_var.begin(); it != input_var.end(); it++)
-	{
-		std::map<int, MF*>* pmapmf = it->second;
-		for(auto itmf = pmapmf->begin(); itmf != pmapmf->end(); itmf++)
-		{
-			MF* mf = itmf->second;
-			map_table_value_mf.insert(std::pair<int, float>(itmf->first, mf->get_fuzzynum(value)));
-			printf("[fuzzification] get mf value: %f\n", mf->get_fuzzynum(value));
-			printf("\n");
-
-			std::vector<std::pair<double, double>> xy_pts_A;
-			for(double x = 0; x < 30; x += 0.01) 
-			{	
-				double y = mf->get_fuzzynum(x);
-				xy_pts_A.push_back(std::make_pair(x, y));
-			}
-			
-			fp.plot(xy_pts_A);
-		}		
-	}
-	fp.plotv(value, "input");
-	fp.unset_multiplot();
+	fp.set_xrange(xmin, xmax);
+	fp.plot(xmf, mf_allmax, len_a);
+	fp.plotv(defuzzification());
+	MEMCHECK.rm_ptr(xmf);
 	
-	std::pair<int, float> pair_out = get_id_maxv(map_table_value_mf);
-	int id_out = get_id_output_mf(0, pair_out.first);
-	printf("[fuzzification] !! %i %i \n", pair_out.first, id_out);
-	auto itoutv = output_var.find(1);
-	auto itou = (itoutv->second)->find(id_out);
-	MF *mfout = itou->second;
-	mfout->set_truncation_h(pair_out.second);
-	
-	Fuzzyplot fp2;
-	fp2.set_xrange(0, 30);
-	
-	std::vector<std::pair<double, double>> xy_pts_A;
-	for(double x = 0; x < 30; x += 0.01) 
-	{	
-		double y = mfout->get_fuzzynum(x);
-		xy_pts_A.push_back(std::make_pair(x, y));
-	}
-	fp2.set_multiplot();
-	fp2.plot(xy_pts_A);
-	
-	float sumy = 0;
-	float sumyx = 0;
-	for(float x = 0; x < 30; x += 0.01)
-	{
-		float y = mfout->get_fuzzynum(x);
-		sumy += y;
-		sumyx += x * y;
-	}
-	fp2.plotv(sumyx / sumy, "OUTPUT");
-	fp2.unset_multiplot();
-	
+	delete[] xmf;
 	return 0.0;
+}
+
+float FIC::defuzzification()
+{
+	int len_a = (int)((xmax - xmin) / step) + 1;
+	float sumy = 0;
+	float sumxy = 0;
+	for(int i = 0; i < len_a; i++)
+	{
+		sumy += mf_allmax[i];
+		sumxy += ((float)i * step + xmin) * mf_allmax[i];
+	}
+	//printf("[FIC::defuzzification] %f\n", sumxy / sumy);
+	return sumxy / sumy;
 }
