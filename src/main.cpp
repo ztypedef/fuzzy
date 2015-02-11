@@ -29,7 +29,8 @@ int main(int argc, char *argv[])
 	float val_in13[] =  {16.0, 25.0, 30.0};
 	
 	float val_in21[] =  {1.0, 5.0, 8.0};
-	float val_in22[] =  {7.0, 10.0, 30.0};
+	float val_in22[] =  {7.0, 10.0, 20.0};
+	float val_in23[] =  {17.0, 25.0, 30.0};
 	
 	float val_out1[] = {1.0, 5.0, 9.0};
 	float val_out2[] = {3.0, 10.0, 14.0};
@@ -43,6 +44,7 @@ int main(int argc, char *argv[])
 		
 		int id_i21 = fic->addmf_tri(id_in2, val_in21, fuzzy::INPUT);
 		int id_i22 = fic->addmf_tri(id_in2, val_in22, fuzzy::INPUT);
+		int id_i23 = fic->addmf_tri(id_in2, val_in23, fuzzy::INPUT);
 		
 		int id_o1 = fic->addmf_tri(id_out, val_out1, fuzzy::OUTPUT);
 		int id_o2 = fic->addmf_tri(id_out, val_out2, fuzzy::OUTPUT);
@@ -53,8 +55,8 @@ int main(int argc, char *argv[])
 		printf("id output var 1: %i %i %i\n", id_o1, id_o2, id_o3);
 					  //in  //out   //weight //operator
 		int r[3][5] = {{id_i11, id_i21, id_o1,  1, 0},
-					   {id_i12, id_i21, id_o2,  1, 0},
-					   {id_i13, id_i22, id_o3,  1, 0}};
+					   {id_i12, id_i22, id_o2,  1, 0},
+					   {id_i13, id_i23, id_o3,  1, 0}};
 		
 		fic->addrule(r[0], 3, 5);
 		fic->gensurf();

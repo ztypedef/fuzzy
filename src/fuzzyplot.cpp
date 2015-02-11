@@ -37,15 +37,16 @@ void Fuzzyplot::plot(float *x, float *y, int len)
 	fprintf(gp, "%s\n", "e");
 }
 
-void Fuzzyplot::plot3d(float *x, float *y, float *z, int len)
+void Fuzzyplot::plot3d(float **xy, int len)
 {
+	/*
 	//fprintf(gp, "set dgrid3d 100,100\n");
 	fprintf(gp, "set grid\n");
 	fprintf(gp, "set contour\n");
 	//fprintf(gp, "set hidden3d\n");
 	fprintf(gp, "splot '-'  \n");
 	for(int i = 0; i < len; i++)
-		fprintf(gp, "%f %f %f\n", x[i], y[i], z[i]);
+		fprintf(gp, "%f %f %f\n", x[i], y[i], z[i]);*/
 		/*
 	for(int i = 0; i < len; i++) fprintf(gp, "%f", x[i]);
 	fprintf(gp, "\n");
@@ -53,24 +54,25 @@ void Fuzzyplot::plot3d(float *x, float *y, float *z, int len)
 	fprintf(gp, "\n");
 	for(int i = 0; i < len; i++) fprintf(gp, "%f", z[i]);
 	fprintf(gp, "\n");*/
-	
-	fprintf(gp, "%s\n", "e");
-	fprintf(gp, "%s\n", "e");
-	
 	/*
+	fprintf(gp, "%s\n", "e");
+	fprintf(gp, "%s\n", "e");
+	*/
+	fprintf(gp, "set grid\n");
+	fprintf(gp, "set hidden3d\n");
 	int rows = len, cols = len;
-	fprintf(gp, "splot '-' matrix notitle with lines\n" );
+	fprintf(gp, "splot '-' nonuniform matrix with lines notitle\n" );
 	for(int i = 0; i < rows; i++)
 	{
 		for(int j = 0; j < cols; j++)
 		{
 			fprintf(gp, "%f ", xy[i][j]);
 		}
-		fprintf(gp "\n");
+		fprintf(gp, "\n");
 	}
 	fprintf(gp, "e\n" );
-	fprintf(gp, "e\n" );*/
-	//fflush(gp);
+	fprintf(gp, "e\n" );
+	fflush(gp);
 }
 
 void Fuzzyplot::plotv(float value, std::string linename) 

@@ -446,12 +446,15 @@ float FIC::defuzzification()
 
 void FIC::gensurf()
 {
-	float _h = 2;
+	float _h = 1;
 	int len_a = (int) 30 / _h;
 	float value_inp[2];
-	float value_x[len_a * len_a];
-	float value_y[len_a * len_a];
-	float value_z[len_a * len_a];
+	float **value_xy = new float*[len_a + 1];
+	for(int i = 0; i < len_a + 1; i++)
+		value_xy[i] = new float[len_a + 1];
+		
+	//float value_xy [len_a + 1][len_a + 1];
+	value_xy[0][0] = len_a;
 	printf("length: %i\n", len_a);
 	for(int i = 0; i < len_a; i++)
 	{
@@ -459,22 +462,36 @@ void FIC::gensurf()
 		{
 			value_inp[0] = j * _h;
 			value_inp[1] = i * _h;
-			value_x[i * len_a + j] = value_inp[0];
-			value_y[i * len_a + j] = value_inp[1];
+			value_xy[0][j + 1] = value_inp[0];
+			value_xy[i + 1][0] = value_inp[1];
 			fuzzification(value_inp);
 			composition();
-			value_z[i * len_a + j] = defuzzification();
-			value_z[0] = 0;
-			printf("%f %f %f\n", value_x[i * len_a + j], value_y[i * len_a + j], value_z[i * len_a + j]);
+			
+			value_xy[i + 1][j + 1] = defuzzification();
 		}
 		printf("=");
-		//fflush(stdout);
+		fflush(stdout);
 	}
+	value_xy[1][1] = 0;
 	printf("\n");
 	printf("end\n");
+	/*
+	for(int i = 0; i < len_a + 1; i++)
+	{
+		for(int j = 0; j < len_a + 1; j++)
+		{
+			printf("%7.2f ", value_xy[i][j]);
+		}
+		printf("\n");
+	}*/
+	
 	Fuzzyplot fp;
 	fp.set_xrange(0, 30);
 	fp.set_yrange(0, 30);
 	fp.set_zrange(0, 30);
-	fp.plot3d(value_x, value_y, value_z, len_a * len_a);
+	fp.plot3d(value_xy, len_a);
+	printf("@\n");
+	for(int i = 0; i < len_a + 1; i++)
+		delete [] value_xy[i];
+	delete [] value_xy;
 }

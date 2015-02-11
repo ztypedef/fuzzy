@@ -10,7 +10,7 @@ public:
 	~Fuzzyplot();
 	void plot(std::vector<std::pair<double, double>> xy_pts_A);
 	void plot(float *x, float *y, int len);
-	void plot3d(float *x, float *y, float *z, int len);
+	void plot3d(float **xy, int len);
 	void plotv(float value, std::string linename);
 	void plotv(float value);
 	void set_multiplot(){fprintf(gp, "set multiplot\n");};
