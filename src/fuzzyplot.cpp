@@ -16,6 +16,7 @@ Fuzzyplot::Fuzzyplot()
 
 Fuzzyplot::~Fuzzyplot()
 {
+	fprintf(gp, "q\n");
 	pclose(gp);
 }
 
@@ -25,5 +26,15 @@ void Fuzzyplot::plot(std::vector<std::pair<double, double>> xy_pts_A)
     fprintf(gp, "plot '-' with lines\n");
 	for (auto it = xy_pts_A.begin() ; it != xy_pts_A.end(); ++it)
 		fprintf(gp, "%f %f\n", it->first, it->second);
+	fprintf(gp, "%s\n", "e");
+}
+
+void Fuzzyplot::plotv(float value, std::string linename) 
+{
+	
+	//printf("plot '%s' with lines lt rgb \"#FF00FF\"\n", linename.c_str());
+    fprintf(gp, "plot '' tit '%s' with lines lt rgb \"#FF00FF\"\n", linename.c_str());
+	fprintf(gp, "%f %f \n", value, 0.0f);
+	fprintf(gp, "%f %f \n", value, 1.0f);
 	fprintf(gp, "%s\n", "e");
 }

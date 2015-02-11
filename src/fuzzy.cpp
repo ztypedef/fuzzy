@@ -38,6 +38,7 @@ float trimf::get_fuzzynum(float v)
 	if(v == pvar[1])
 		mu = 1.0f;
 	if(mu > trc_h) mu = trc_h;
+	//printf("[trimf::get_fuzzynum] mu: %f, %f\n", v, mu);
 	return mu;
 }
 
@@ -322,7 +323,7 @@ std::pair<int, float> FIC::get_id_maxv(std::map<int, float> map_table_value_mf)
 {
 	int id_max_el = 0;
 	float max_value = 0;
-	for(auto it = map_table_value_mf.begin(); it != map_table_value_mf.end(); ++it)
+	for(auto it = map_table_value_mf.begin(); it != map_table_value_mf.end(); it++)
 	{
 		printf("it->second: %i, %f\n", it->first, it->second);
 		if(max_value < it->second)
@@ -339,17 +340,15 @@ float FIC::fuzzification(float value)
 	std::map<int, float> map_table_value_mf;
 	Fuzzyplot fp;
 	fp.set_multiplot();
-	
-	for(auto it = input_var.begin(); it != input_var.end(); ++it)
+	fp.set_xrange(0, 30);
+	for(auto it = input_var.begin(); it != input_var.end(); it++)
 	{
 		std::map<int, MF*>* pmapmf = it->second;
-		for(auto itmf = pmapmf->begin(); itmf != pmapmf->end(); ++itmf)
+		for(auto itmf = pmapmf->begin(); itmf != pmapmf->end(); itmf++)
 		{
 			MF* mf = itmf->second;
-			//mf->set_truncation_h(0.5);
 			map_table_value_mf.insert(std::pair<int, float>(itmf->first, mf->get_fuzzynum(value)));
 			printf("[fuzzification] get mf value: %f\n", mf->get_fuzzynum(value));
-			//printf("[fuzzification] get mf integral: %f\n", mf->integral(0.5));
 			printf("\n");
 
 			std::vector<std::pair<double, double>> xy_pts_A;
@@ -362,6 +361,7 @@ float FIC::fuzzification(float value)
 			fp.plot(xy_pts_A);
 		}		
 	}
+	fp.plotv(value, "input");
 	fp.unset_multiplot();
 	
 	std::pair<int, float> pair_out = get_id_maxv(map_table_value_mf);
@@ -373,26 +373,27 @@ float FIC::fuzzification(float value)
 	mfout->set_truncation_h(pair_out.second);
 	
 	Fuzzyplot fp2;
+	fp2.set_xrange(0, 30);
+	
 	std::vector<std::pair<double, double>> xy_pts_A;
 	for(double x = 0; x < 30; x += 0.01) 
 	{	
 		double y = mfout->get_fuzzynum(x);
 		xy_pts_A.push_back(std::make_pair(x, y));
 	}
-	
+	fp2.set_multiplot();
 	fp2.plot(xy_pts_A);
 	
-	
-	
-	/*
-	auto itmf = pmapmf->begin();
-	for(;;)
+	float sumy = 0;
+	float sumyx = 0;
+	for(float x = 0; x < 30; x += 0.01)
 	{
-		MF* mf = itmf->second;
-		if((++itmf) == pmapmf->end()) break;
-		float is = intersecting_mf(mf, itmf->second);
-		printf("[fuzzification] intersecting point: %f \n", is);
-	}*/
+		float y = mfout->get_fuzzynum(x);
+		sumy += y;
+		sumyx += x * y;
+	}
+	fp2.plotv(sumyx / sumy, "OUTPUT");
+	fp2.unset_multiplot();
 	
 	return 0.0;
 }
