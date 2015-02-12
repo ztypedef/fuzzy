@@ -18,10 +18,10 @@ int main(int argc, char *argv[])
 	}
 
 	fuzzy::FIC *fic = new fuzzy::FIC();
-	int id_in1 = fic->addvar("min", fuzzy::INPUT);
-	int id_in2 = fic->addvar("max", fuzzy::INPUT);
+	int id_in1 = fic->addvar("x1", fuzzy::INPUT);
+	int id_in2 = fic->addvar("x2", fuzzy::INPUT);
 	
-	int id_out = fic->addvar("mout", fuzzy::OUTPUT);
+	int id_out = fic->addvar("y1", fuzzy::OUTPUT);
 	
 	float val_in11[] =  {1.0, 2.0, 7.0};
 	float val_in12[] =  {6.0, 14.3, 20.0};

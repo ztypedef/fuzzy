@@ -197,6 +197,7 @@ int FIC::addvar(std::string varname, var_t type)
 			int id = it->first + 1;
 			it = input_var.begin();
 			input_var.insert(it, std::pair<int, std::map<int, MF*>*>(id, pv));
+			input_name_var.insert(std::pair<int, std::string>(id, varname));
 			return id;
 		}
 		case OUTPUT:
@@ -205,6 +206,7 @@ int FIC::addvar(std::string varname, var_t type)
 			int id = it->first + 1;
 			it = output_var.begin();
 			output_var.insert(it, std::pair<int, std::map<int, MF*>*>(id, pv));
+			output_name_var.insert(std::pair<int, std::string>(id, varname));
 			return id;
 		}
 		default:
@@ -284,8 +286,14 @@ void FIC::rmvar(var_t var_type, int var_index)
 	std::map<int, MF*>* mapmf;
 	switch(var_type)
 	{
-		case OUTPUT: var = &output_var; break;
-		case INPUT:  var = &input_var;  break;
+		case OUTPUT: 
+			var = &output_var;
+			output_name_var.erase(var_index);
+			break;
+		case INPUT:  
+			var = &input_var; 
+			input_name_var.erase(var_index);
+			break;
 		default: break;
 	}
 	it = var->find(var_index);
@@ -373,7 +381,8 @@ void FIC::showrule(int* index_list, int len)
 		{
 			if(i < input_var.size())
 			{
-				printf("(is %s) ", get_name_mf(INPUT, i + 1, fic_rule[clmn][i]).c_str());
+				printf("(%s ", input_name_var.find(i + 1)->second.c_str());
+				printf("is %s) ", get_name_mf(INPUT, i + 1, fic_rule[clmn][i]).c_str());
 				if(i != input_var.size() - 1)
 				{
 					if (fic_rule[clmn][rule_row - 1]) printf("or  ");
@@ -386,7 +395,9 @@ void FIC::showrule(int* index_list, int len)
 			}
 			else
 			{
-				printf("(is %s)\n", get_name_mf(OUTPUT, i + 1 - input_var.size(), fic_rule[clmn][i]).c_str());
+				int idout = i + 1 - input_var.size();
+				printf("(%s ", output_name_var.find(idout)->second.c_str());
+				printf("is %s)\n", get_name_mf(OUTPUT, idout, fic_rule[clmn][i]).c_str());
 			}
 		}
 	}
