@@ -19,7 +19,7 @@ int main(int argc, char *argv[])
 
 	fuzzy::FIC *fic = new fuzzy::FIC();
 	int id_in1 = fic->addvar("min", fuzzy::INPUT);
-	int id_in2 = fic->addvar("l",   fuzzy::INPUT);
+	int id_in2 = fic->addvar("max", fuzzy::INPUT);
 	
 	int id_out = fic->addvar("mout", fuzzy::OUTPUT);
 	
@@ -37,21 +37,21 @@ int main(int argc, char *argv[])
 	
 	try
 	{
-		int id_i11 = fic->addmf_tri(id_in1, val_in11, fuzzy::INPUT);
-		int id_i12 = fic->addmf_tri(id_in1, val_in12, fuzzy::INPUT);
-		int id_i13 = fic->addmf_tri(id_in1, val_in13, fuzzy::INPUT);
+		int id_i11 = fic->addmf_tri(id_in1, val_in11, fuzzy::INPUT, "a");
+		int id_i12 = fic->addmf_tri(id_in1, val_in12, fuzzy::INPUT, "b");
+		int id_i13 = fic->addmf_tri(id_in1, val_in13, fuzzy::INPUT, "c");
 		
-		int id_i21 = fic->addmf_tri(id_in2, val_in21, fuzzy::INPUT);
-		int id_i22 = fic->addmf_tri(id_in2, val_in22, fuzzy::INPUT);
-		int id_i23 = fic->addmf_tri(id_in2, val_in23, fuzzy::INPUT);
+		int id_i21 = fic->addmf_tri(id_in2, val_in21, fuzzy::INPUT, "d");
+		int id_i22 = fic->addmf_tri(id_in2, val_in22, fuzzy::INPUT, "e");
+		int id_i23 = fic->addmf_tri(id_in2, val_in23, fuzzy::INPUT, "f");
 		
-		int id_o1 = fic->addmf_tri(id_out, val_out1, fuzzy::OUTPUT);
-		int id_o2 = fic->addmf_tri(id_out, val_out2, fuzzy::OUTPUT);
-		int id_o3 = fic->addmf_tri(id_out, val_out3, fuzzy::OUTPUT);
+		int id_o1 = fic->addmf_tri(id_out, val_out1, fuzzy::OUTPUT, "g");
+		int id_o2 = fic->addmf_tri(id_out, val_out2, fuzzy::OUTPUT, "h");
+		int id_o3 = fic->addmf_tri(id_out, val_out3, fuzzy::OUTPUT, "i");
 
-		printf("id input  var 1: %i %i %i\n", id_i11, id_i12, id_i13);
-		printf("id input  var 2: %i %i %i\n", id_i21, id_i22, id_i23);
-		printf("id output var 1: %i %i %i\n", id_o1, id_o2, id_o3);
+		//printf("id input  var 1: %i %i %i\n", id_i11, id_i12, id_i13);
+		//printf("id input  var 2: %i %i %i\n", id_i21, id_i22, id_i23);
+		//printf("id output var 1: %i %i %i\n", id_o1, id_o2, id_o3);
 					  //in  //out   //weight //operator
 		int r[3][5] = {{id_i11, id_i21, id_o1,  1, 1},
 					   {id_i12, id_i22, id_o2,  1, 0},
@@ -65,7 +65,10 @@ int main(int argc, char *argv[])
 		//fic->getfis();
 		//fic->rmmf(fuzzy::INPUT, 1, 1);
 		//fic->rmvar(fuzzy::INPUT, 1);
-		fic->getfis();
+		//fic->getfis();
+		//int sr[] = {2, 1};
+		//fic->showrule(sr, sizeof(sr) / sizeof(int));
+		fic->showrule();
 		
 	}
 	catch (const char* ch)

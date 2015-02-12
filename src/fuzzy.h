@@ -11,6 +11,11 @@ namespace fuzzy
 		INPUT  = 0x0,
 		OUTPUT = 0x1,
 	}var_t;
+	
+	typedef enum mf_t
+	{
+		TRIMF  = 0x1,
+	}mf_t;
 		
 	class MF
 	{
@@ -22,11 +27,14 @@ namespace fuzzy
 		virtual float integral(float h){return 0;};
 		virtual std::vector<float> getvx(float mu){std::vector<float> vi; return vi;};
 		virtual void set_truncation_h(float h){trc_h = h;};
+		std::string get_name(){return namemf;};
+		void set_name(std::string n_mf){namemf = n_mf;};
 	protected:
 		virtual void getx(float *x, float* n, float mu){};
 		float *pvar;
 		int len;
 		float trc_h = 1;
+		std::string namemf;
 	};
 	
 	class trimf : public MF
@@ -51,12 +59,21 @@ namespace fuzzy
 		~FIC();
 		//int addvar(std::string mfname); //return id mf
 		void getfis();
-		int addvar(std::string mfname, var_t type);
-		int addmf(int idvar, MF *v, var_t type); //return id var
-		int addmf_tri(int idvar, float *x, var_t type);
+		void showrule();
+		void showrule(int* index_list, int len);
+		void showrule(int* index_list, int len, int format);
+		//void showrule(int indexList, int format, int Lang);
+		
+		int addvar(std::string varname, var_t type);
+		
+		int addmf(var_t var_type, int var_index, std::string namemf, mf_t mf_type, float* mf_params);
+		int _addmf(int idvar, MF *v, var_t type); //return id var
+		int addmf_tri(int idvar, float *x, var_t type, std::string name_mf);
+		
 		void addrule(int rule[], int collumn, int row);
 		void rmvar(var_t var_type, int var_index);
-		void rmmf(var_t varType, int var_index, int mf_index);
+		void rmmf(var_t var_type, int var_index, int mf_index);
+		
 		void gensurf();
 		void plotmf(var_t var_type, int var_index);
 		
@@ -71,6 +88,7 @@ namespace fuzzy
 		float defuzzification();
 		
 	private:
+		std::string get_name_mf(var_t var_type, int var_index, int mf_index);
 		int get_id_output_mf(int input_var, int id_input_mf);
 		std::pair<int, float> get_id_maxv(std::map<int, float> map_table_value_mf);
 		int **fic_rule;
@@ -80,6 +98,9 @@ namespace fuzzy
 		std::map<int, MF*> var;
 		std::map<int, std::map<int, MF*>*> input_var;
 		std::map<int, std::map<int, MF*>*> output_var;
+		
+		std::map<int, std::string> input_name_var;
+		std::map<int, std::string> output_name_var;
 	};
 }
 #endif

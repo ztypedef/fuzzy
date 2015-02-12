@@ -184,7 +184,7 @@ FIC::~FIC()
 	delete[] mf_allmax;
 }
 
-int FIC::addvar(std::string mfname, var_t type)
+int FIC::addvar(std::string varname, var_t type)
 {
 	std::map<int, MF*> *pv = new std::map<int, MF*>();
 	MEMCHECK.add_ptr(pv, "[FIC::addvar] pv");
@@ -215,7 +215,17 @@ int FIC::addvar(std::string mfname, var_t type)
 	return -1;
 }
 
-int FIC::addmf(int idvar, MF *v, var_t type)
+int FIC::addmf(var_t var_type, int var_index, std::string namemf, mf_t mf_type, float* mf_params)
+{
+	
+	switch(mf_type)
+	{
+		case TRIMF: return addmf_tri(var_index, mf_params, var_type, namemf);
+		default: return -1;
+	}
+}
+
+int FIC::_addmf(int idvar, MF *v, var_t type)
 {
 	std::map<int, std::map<int, MF*>*>::iterator itm;
 	switch(type)
@@ -239,13 +249,14 @@ int FIC::addmf(int idvar, MF *v, var_t type)
 	return id;
 }
 
-int FIC::addmf_tri(int idvar, float *x, var_t type)
+int FIC::addmf_tri(int idvar, float *x, var_t type, std::string name_mf)
 {
 	if (x[0] > x[1]) throw "var 1 > var 2";
 	if (x[1] > x[2]) throw "var 2 > var 3";
 	trimf *tri = new trimf(x);
+	tri->set_name(name_mf);
 	MEMCHECK.add_ptr(tri, "[FIC::addmf_tri] tri");
-	return addmf(idvar, (MF*)tri, type);
+	return _addmf(idvar, (MF*)tri, type);
 }
 
 void FIC::addrule(int rule[], int collumn, int row)
@@ -329,6 +340,56 @@ void FIC::getfis()
 	for(auto it = output_var.begin(); it != output_var.end(); it++)
 		printf("output var[%i] size: %i\n", it->first, it->second->size());
 	
+}
+
+std::string FIC::get_name_mf(var_t var_type, int var_index, int mf_index)
+{
+	std::map<int, std::map<int, MF*>*>* var;
+	switch(var_type)
+	{
+		case OUTPUT: var = &output_var; break;
+		case INPUT:  var = &input_var;  break;
+		default: break;
+	}
+	auto mf = var->find(var_index)->second;
+	return mf->find(mf_index)->second->get_name();
+}
+
+void FIC::showrule()
+{
+	int *sr = new int[rule_collumn];
+	for(int i = 0; i < rule_collumn; i++)
+		sr[i] = i + 1;
+	showrule(sr, rule_collumn);
+}
+
+void FIC::showrule(int* index_list, int len)
+{
+	for(int j = 0; j < len; j++)
+	{
+		int clmn = index_list[j] - 1;
+		printf("%i. If ", clmn + 1);
+		for(unsigned i = 0; (int)i < rule_row - 2; i++)
+		{
+			if(i < input_var.size())
+			{
+				printf("(is %s) ", get_name_mf(INPUT, i + 1, fic_rule[clmn][i]).c_str());
+				if(i != input_var.size() - 1)
+				{
+					if (fic_rule[clmn][rule_row - 1]) printf("or  ");
+					else printf("and ");
+				}
+				else
+				{
+					printf("then ");
+				}
+			}
+			else
+			{
+				printf("(is %s)\n", get_name_mf(OUTPUT, i + 1 - input_var.size(), fic_rule[clmn][i]).c_str());
+			}
+		}
+	}
 }
 
 MF* FIC::get_input_MF(int idvar, int idmf)
