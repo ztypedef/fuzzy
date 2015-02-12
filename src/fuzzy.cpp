@@ -266,6 +266,71 @@ void FIC::addrule(int rule[], int collumn, int row)
 	}
 }
 
+void FIC::rmvar(var_t var_type, int var_index)
+{
+	std::map<int, std::map<int, MF*>*>* var;
+	std::map<int, std::map<int, MF*>*>::iterator it;
+	std::map<int, MF*>* mapmf;
+	switch(var_type)
+	{
+		case OUTPUT: var = &output_var; break;
+		case INPUT:  var = &input_var;  break;
+		default: break;
+	}
+	it = var->find(var_index);
+	mapmf = it->second;
+	for(auto itm = mapmf->begin(); itm != mapmf->end(); ++itm)
+	{
+		auto pmf = itm->second;
+		MEMCHECK.rm_ptr(pmf);
+		delete pmf;
+		mapmf->erase(itm);
+	}
+	MEMCHECK.rm_ptr(mapmf);
+	delete mapmf;
+	var->erase(it);
+}
+
+void FIC::rmmf(var_t var_type, int var_index, int mf_index)
+{
+	std::map<int, std::map<int, MF*>*>::iterator it;
+	std::map<int, MF*>::iterator itm;
+	switch(var_type)
+	{
+		case OUTPUT:
+			it = output_var.find(var_index);
+			MEMCHECK.rm_ptr(it->second->find(mf_index)->second);
+			itm = it->second->find(mf_index);
+			delete itm->second;
+			it->second->erase(itm);
+			break;
+		case INPUT:
+			it = input_var.find(var_index);
+			MEMCHECK.rm_ptr(it->second->find(mf_index)->second);
+			itm = it->second->find(mf_index);
+			delete itm->second;
+			it->second->erase(itm);
+			break;
+		default:
+			break;
+	}
+}
+
+void FIC::getfis()
+{
+	printf("[FIC::getfis]\n");
+	printf("amount input  var: %i\n", input_var.size());
+	printf("amount output var: %i\n", output_var.size());
+	
+	
+	for(auto it = input_var.begin(); it != input_var.end(); it++)
+		printf("input  var[%i] size: %i\n", it->first, it->second->size());
+		
+	for(auto it = output_var.begin(); it != output_var.end(); it++)
+		printf("output var[%i] size: %i\n", it->first, it->second->size());
+	
+}
+
 MF* FIC::get_input_MF(int idvar, int idmf)
 {
 	std::map<int, MF*>* mapmf = input_var.find(idvar)->second;
@@ -424,7 +489,6 @@ float FIC::composition()
 	fp.plotv(defuzzification());*/
 	
 	MEMCHECK.rm_ptr(xmf);
-	
 	delete[] xmf;
 	return 0.0;
 }
@@ -452,10 +516,8 @@ void FIC::gensurf()
 	float **value_xy = new float*[len_a + 1];
 	for(int i = 0; i < len_a + 1; i++)
 		value_xy[i] = new float[len_a + 1];
-		
-	//float value_xy [len_a + 1][len_a + 1];
 	value_xy[0][0] = len_a;
-	printf("length: %i\n", len_a);
+	
 	for(int i = 0; i < len_a; i++)
 	{
 		for(int j = 0; j < len_a; j++)
@@ -469,29 +531,53 @@ void FIC::gensurf()
 			
 			value_xy[i + 1][j + 1] = defuzzification();
 		}
-		printf("=");
+		//printf("=");
 		fflush(stdout);
 	}
 	value_xy[1][1] = 0;
-	printf("\n");
+	//printf("\n");
 	printf("end\n");
-	/*
-	for(int i = 0; i < len_a + 1; i++)
-	{
-		for(int j = 0; j < len_a + 1; j++)
-		{
-			printf("%7.2f ", value_xy[i][j]);
-		}
-		printf("\n");
-	}*/
-	
+
 	Fuzzyplot fp;
-	fp.set_xrange(0, 30);
-	fp.set_yrange(0, 30);
-	fp.set_zrange(0, 30);
+	fp.set_xrange(xmin, xmax);
+	fp.set_yrange(xmin, xmax);
+	fp.set_zrange(xmin, xmax);
 	fp.plot3d(value_xy, len_a);
-	printf("@\n");
+
 	for(int i = 0; i < len_a + 1; i++)
 		delete [] value_xy[i];
 	delete [] value_xy;
+}
+
+void FIC::plotmf(var_t var_type, int var_index)
+{
+	std::map<int, fuzzy::MF*>* mapmf;
+	switch(var_type)
+	{
+		case OUTPUT:
+			mapmf = output_var.find(var_index)->second;
+			break;
+		case INPUT:
+			mapmf = input_var.find(var_index)->second;
+			break;
+		default:
+			break;
+	}
+	Fuzzyplot fp;
+	fp.set_xrange(xmin, xmax);
+	fp.set_yrange(0, 1);
+	fp.set_multiplot();
+	
+	for(auto it = mapmf->begin(); it != mapmf->end(); ++it)
+	{
+		std::vector<std::pair<float, float>> xy_pts_A;
+		xy_pts_A.clear();
+		it->second->set_truncation_h(1.0);
+		for(float x = 0; x < 30; x += 0.01)
+		{
+			float y = it->second->get_fuzzynum(x);
+			xy_pts_A.push_back(std::make_pair(x, y));
+		}
+		fp.plot(xy_pts_A);
+	}
 }

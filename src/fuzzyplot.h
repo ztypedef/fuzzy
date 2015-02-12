@@ -8,7 +8,7 @@ class Fuzzyplot
 public:
 	Fuzzyplot();
 	~Fuzzyplot();
-	void plot(std::vector<std::pair<double, double>> xy_pts_A);
+	void plot(std::vector<std::pair<float, float>> xy_pts_A);
 	void plot(float *x, float *y, int len);
 	void plot3d(float **xy, int len);
 	void plotv(float value, std::string linename);

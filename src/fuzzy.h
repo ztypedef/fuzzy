@@ -50,11 +50,15 @@ namespace fuzzy
 		FIC();
 		~FIC();
 		//int addvar(std::string mfname); //return id mf
+		void getfis();
 		int addvar(std::string mfname, var_t type);
 		int addmf(int idvar, MF *v, var_t type); //return id var
 		int addmf_tri(int idvar, float *x, var_t type);
 		void addrule(int rule[], int collumn, int row);
+		void rmvar(var_t var_type, int var_index);
+		void rmmf(var_t varType, int var_index, int mf_index);
 		void gensurf();
+		void plotmf(var_t var_type, int var_index);
 		
 		float genval(float p);
 		float intersecting_mf(MF* a, MF* b);

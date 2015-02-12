@@ -20,7 +20,7 @@ Fuzzyplot::~Fuzzyplot()
 	pclose(gp);
 }
 
-void Fuzzyplot::plot(std::vector<std::pair<double, double>> xy_pts_A) 
+void Fuzzyplot::plot(std::vector<std::pair<float, float>> xy_pts_A) 
 {
 	
     fprintf(gp, "plot '-' with lines\n");

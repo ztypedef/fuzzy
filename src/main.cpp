@@ -2,7 +2,6 @@
 #include "fuzzy.h"
 #include "memcheck.h"
 
-//git clone git://gitorious.org/gnuplot-iostream/gnuplot-iostream.git
 
 int main(int argc, char *argv[])
 {
@@ -49,17 +48,24 @@ int main(int argc, char *argv[])
 		int id_o1 = fic->addmf_tri(id_out, val_out1, fuzzy::OUTPUT);
 		int id_o2 = fic->addmf_tri(id_out, val_out2, fuzzy::OUTPUT);
 		int id_o3 = fic->addmf_tri(id_out, val_out3, fuzzy::OUTPUT);
-		//printf("id: %i %i %i %i %i %i\n", id_i1, id_i2, id_i3, id_o1, id_o2, id_o3);
+
 		printf("id input  var 1: %i %i %i\n", id_i11, id_i12, id_i13);
-		printf("id input  var 2: %i %i\n",    id_i21, id_i22);
+		printf("id input  var 2: %i %i %i\n", id_i21, id_i22, id_i23);
 		printf("id output var 1: %i %i %i\n", id_o1, id_o2, id_o3);
 					  //in  //out   //weight //operator
-		int r[3][5] = {{id_i11, id_i21, id_o1,  1, 0},
+		int r[3][5] = {{id_i11, id_i21, id_o1,  1, 1},
 					   {id_i12, id_i22, id_o2,  1, 0},
 					   {id_i13, id_i23, id_o3,  1, 0}};
 		
 		fic->addrule(r[0], 3, 5);
-		fic->gensurf();
+		//fic->gensurf();
+		//fic->plotmf(fuzzy::INPUT, 1);
+		//fic->plotmf(fuzzy::INPUT, 2);
+		//fic->plotmf(fuzzy::OUTPUT, 1);
+		//fic->getfis();
+		//fic->rmmf(fuzzy::INPUT, 1, 1);
+		//fic->rmvar(fuzzy::INPUT, 1);
+		fic->getfis();
 		
 	}
 	catch (const char* ch)

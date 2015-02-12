@@ -18,7 +18,7 @@ void Memcheck::rm_ptr(void* ptr)
 	it = mptr.find((unsigned)ptr);
 	if(it == mptr.end()) 
 	{
-		printf("[MEMCHECK] pointer no found: 0x%x", (unsigned)ptr);
+		printf("[MEMCHECK] pointer no found: 0x%x\n", (unsigned)ptr);
 		return;
 	}
 	mptr.erase(it); 
