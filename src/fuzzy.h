@@ -57,36 +57,39 @@ namespace fuzzy
 	public:
 		FIC();
 		~FIC();
-		//int addvar(std::string mfname); //return id mf
+		
+		/**********************MATLAB STYLE*************************/
 		void getfis();
 		void showrule();
 		void showrule(int* index_list, int len);
-		void showrule(int* index_list, int len, int format);
-		//void showrule(int indexList, int format, int Lang);
-		
-		int addvar(std::string varname, var_t type);
-		
-		int addmf(var_t var_type, int var_index, std::string namemf, mf_t mf_type, float* mf_params);
-		int _addmf(int idvar, MF *v, var_t type); //return id var
-		int addmf_tri(int idvar, float *x, var_t type, std::string name_mf);
-		
+		void showrule(int* index_list, int len, int format); //don't work
+	
+		int addvar(std::string varname, var_t type);		
+		int addmf(var_t var_type, int var_index, std::string namemf, mf_t mf_type, float* mf_params);	
 		void addrule(int rule[], int collumn, int row);
+
 		void rmvar(var_t var_type, int var_index);
 		void rmmf(var_t var_type, int var_index, int mf_index);
 		
 		void gensurf();
 		void plotmf(var_t var_type, int var_index);
 		
-		float genval(float p);
-		float intersecting_mf(MF* a, MF* b);
-	//private:
+		void evalfis(float *value, float* out_value);
+		
+		/***********************************************/
+		int _addmf(int idvar, MF *v, var_t type); //return id var
+		int addmf_tri(int idvar, float *x, var_t type, std::string name_mf);	
+		void set_xrange(float x_min, float x_max, float step_x);
+		
+	private:
 		MF* get_input_MF(int idvar, int idmf);
 		MF* get_output_MF(int idvar, int idmf);
 		float fuzzification(float* value);
 		float truncation(int id_out_var, std::map<int, float> map_table_value_mf);
 		float composition();
 		float defuzzification();
-		
+		/*********************************/
+		float intersecting_mf(MF* a, MF* b);
 	private:
 		std::string get_name_mf(var_t var_type, int var_index, int mf_index);
 		int get_id_output_mf(int input_var, int id_input_mf);
@@ -94,7 +97,7 @@ namespace fuzzy
 		int **fic_rule;
 		int rule_collumn, rule_row;
 		float * mf_allmax;
-		float xmin = 0, xmax = 30, step = 0.01;
+		float xmin = 0, xmax = 20, step = 0.01;
 		std::map<int, MF*> var;
 		std::map<int, std::map<int, MF*>*> input_var;
 		std::map<int, std::map<int, MF*>*> output_var;

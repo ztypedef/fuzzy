@@ -261,6 +261,13 @@ int FIC::addmf_tri(int idvar, float *x, var_t type, std::string name_mf)
 	return _addmf(idvar, (MF*)tri, type);
 }
 
+void FIC::set_xrange(float x_min, float x_max, float step_x)
+{
+	xmin = x_min;
+	xmax = x_max;
+	step = step_x;
+}
+
 void FIC::addrule(int rule[], int collumn, int row)
 {
 	if(fic_rule != NULL) return;
@@ -381,6 +388,7 @@ void FIC::showrule(int* index_list, int len)
 		{
 			if(i < input_var.size())
 			{
+				if(!fic_rule[clmn][i]) continue;
 				printf("(%s ", input_name_var.find(i + 1)->second.c_str());
 				printf("is %s) ", get_name_mf(INPUT, i + 1, fic_rule[clmn][i]).c_str());
 				if(i != input_var.size() - 1)
@@ -487,6 +495,7 @@ float FIC::fuzzification(float* value)
 		for(unsigned num_var = 0; num_var < input_var.size(); num_var++)
 		{
 			int id_in = fic_rule[i][num_var];
+			if(!id_in) continue;
 			//printf("[FIC::fuzzification] get id in: %i\n", id_in);
 			auto it_iv = input_var.find(num_var + 1);
 			MF *mf = ((it_iv->second)->find(id_in))->second;
@@ -579,6 +588,12 @@ float FIC::defuzzification()
 	return sumxy / sumy;
 }
 
+void FIC::evalfis(float *value, float* out_value)
+{
+	fuzzification(value);
+	composition();
+	out_value[0] = defuzzification();
+}
 
 void FIC::gensurf()
 {
@@ -624,13 +639,18 @@ void FIC::gensurf()
 void FIC::plotmf(var_t var_type, int var_index)
 {
 	std::map<int, fuzzy::MF*>* mapmf;
+	std::map<int, std::map<int, MF*>*>::iterator itvar;
 	switch(var_type)
 	{
 		case OUTPUT:
-			mapmf = output_var.find(var_index)->second;
+			itvar = output_var.find(var_index);
+			if(itvar == output_var.end()) return;
+			mapmf = itvar->second;
 			break;
 		case INPUT:
-			mapmf = input_var.find(var_index)->second;
+			itvar = input_var.find(var_index);
+			if(itvar == input_var.end()) return;
+			mapmf = itvar->second;
 			break;
 		default:
 			break;

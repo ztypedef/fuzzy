@@ -58,6 +58,7 @@ void Fuzzyplot::plot3d(float **xy, int len)
 	fprintf(gp, "%s\n", "e");
 	fprintf(gp, "%s\n", "e");
 	*/
+	fprintf(gp, "set contour\n");
 	fprintf(gp, "set grid\n");
 	fprintf(gp, "set hidden3d\n");
 	int rows = len, cols = len;
